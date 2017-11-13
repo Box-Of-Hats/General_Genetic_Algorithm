@@ -1,0 +1,89 @@
+from Genetic import Population
+
+class ExampleProblems():
+    def __init__(self):
+        pass
+
+    def oddsy_evensy(self, chromosome):
+        """
+        A problem where we want a string to contain alternating 0s and 1s.
+        """
+        fitness = 0
+        for c, i in enumerate(chromosome):
+            if c % 2 == 0:
+                fitness += c * i
+            else:
+                fitness -= c * i
+        return fitness
+
+    def summer(self, chromosome):
+        """
+        A problem where we want to have a string containing as many 1s as
+        possible. This function calculates fitness but summing the bits
+        of a chromosome.
+        """
+        fitness = 0
+        for i in chromosome:
+            fitness += i
+        return fitness
+
+    def weird_oddsy_evensy(self, chromosome):
+        """
+        A somewhat random problem.
+        An example of how problems can be more complex and non-trivial.
+        """
+        fitness = 0
+        for c, i in enumerate(chromosome):
+            if c % 2 == 0:
+                fitness += c * i
+            elif c % 3 == 0:
+                fitness -= c * i * i
+            elif c % 5 == 0:
+                fitness = fitness * c * i
+            elif c % 7 == 0:
+                fitness = fitness//2
+            elif c % 9 == 1:
+                fitness += c*2
+            else:
+                fitness -= c 
+        return fitness 
+
+
+
+def main():
+    #An object containing some sample problems that
+    # the genetic algorithm can attempt to solve.
+    problems = ExampleProblems()
+
+    #Initialise the Population object
+    pop = Population()
+
+    #Generate a random sample of 10 chromosomes to be our starting population,
+    # each with a length of 100 bits.
+    pop.set_chromosomes(pop.generate_random_sample(10, 100))
+
+    #Define our fitness function. This will be what we're trying to maximise and will
+    #   be specific to any problem that we are trying to solve.
+    pop.set_fitness_function(problems.summer)
+
+    #Some basic options for our simulation:
+
+    #The number of generations our simulation should go through
+    number_of_generations = 1000
+    #When we select the fittest candidates during the next generation creation, this is the fraction
+    # of the top amount we want to keep. E.g cutoff_divider of 4 means that we keep the top 1/4
+    # of the population
+    cutoff_divider = 4 
+    #The chance for a random bit to mutate when generating new children.
+    mutation_chance = 0.1
+    #Echo some text to the screen when the simulation is finished
+    echo = True
+    #Plot the simulations on a graph when the simulation is finished
+    plot = True
+
+    #Carry out the simulation
+    pop.simulate(number_of_generations=number_of_generations, mutation_chance=mutation_chance, cutoff_divider=cutoff_divider, echo=echo, plot=plot)
+
+
+if __name__ == "__main__":
+    main()

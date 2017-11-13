@@ -20,6 +20,9 @@ class Population():
         """Return a list of chromosome, fitness tuples, sorted in descending order of fitness"""
         return sorted([(chr, self.get_fitness(chr)) for chr in self.chromosomes], key=lambda x: x[1])[::-1]
 
+    def get_fittest(self):
+        return self.get_chromosomes_fitness()[0]
+
     def generate_all_possibilities(self, chromosome_length):
         """Return a list of all possible chromosomes of a given length"""
         return ["".join(seq) for seq in itertools.product("01", repeat=chromosome_length)]
@@ -30,11 +33,10 @@ class Population():
         for s in range(0, number_of_samples):
             yield random.sample(bit_choices, chromosome_length)
 
-
-    def next_generation(self, mutation_chance = 0.2): #TO-DO: Implement this properly
+    def next_generation(self, mutation_chance = 0.2, cutoff_divider=2): #TO-DO: Implement this properly
         """Generate a new population from the current one"""
         prev_generation_size = len(self.chromosomes)
-        cutoff = prev_generation_size//2 
+        cutoff = prev_generation_size//cutoff_divider
         new_generation = []
         prev_fitnesses = self.get_chromosomes_fitness()
         prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
@@ -68,15 +70,28 @@ class Population():
             chromosome[flip_index] = (chromosome[flip_index] + 1) % 2
         return chromosome
 
-    def simulate(self, number_of_generations, mutation_chance=0.2): #TO-DO: implement this properly
+    def simulate(self, number_of_generations, mutation_chance=0.2, cutoff_divider=None, echo=True, plot=True):
         """Simulate a given number of generations and return the final population"""
         max_fitnesses = []
         for g in range(0, number_of_generations):
-            self.next_generation(mutation_chance)
-            print(self.chromosomes)
+            self.next_generation(mutation_chance=mutation_chance, cutoff_divider=cutoff_divider)
             max_fitnesses.append(self.get_chromosomes_fitness()[0][1])
-        print("Max fitness over {number_of_generations} generations: {maxes}".format(maxes=max_fitnesses, number_of_generations=number_of_generations))
 
+        if echo:
+            print("Max fitness after {number_of_generations} generations: {maxes}".format(maxes=self.get_fittest()[1], number_of_generations=number_of_generations))
+            print("Current Fittest: {fittest}".format(fittest=self.get_fittest()[0]))
+
+        if plot:
+            #Plot the results in a nice graph
+            import matplotlib.pyplot as plt
+            plotted_results = plt.plot(max_fitnesses)
+            plt.setp(plotted_results, linewidth=4, color='c')
+            plt.rcParams.update({'font.size': 18})
+            plt.ylabel("Fitness")
+            plt.xlabel("Generation")
+            plt.show()
+        return max_fitnesses
+    
 
 def main():
     pop = Population()
