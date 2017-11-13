@@ -11,9 +11,11 @@ class Population():
         self.chromosomes = [[int(chr) for chr in chromosome] for chromosome in chromosome_list]
         
     def set_fitness_function(self, fitness_function):
+        """Set the fitness function for a given population"""
         self.fitness_function = fitness_function
 
     def get_fitness(self, chromosome):
+        """Get the fitness of a given chromosome based on the population fitness function"""
         return self.fitness_function(chromosome)
 
     def get_chromosomes_fitness(self):
@@ -21,6 +23,7 @@ class Population():
         return sorted([(chr, self.get_fitness(chr)) for chr in self.chromosomes], key=lambda x: x[1])[::-1]
 
     def get_fittest(self):
+        """Get the fittest chromosome of a population. Returns tup(chromosome, score)"""
         return self.get_chromosomes_fitness()[0]
 
     def generate_all_possibilities(self, chromosome_length):
@@ -30,17 +33,17 @@ class Population():
     def generate_random_sample(self, number_of_samples, chromosome_length):
         """Generate a random sample of chromosomes of a given length"""
         bit_choices = [0]*chromosome_length + [1]*chromosome_length
-        for s in range(0, number_of_samples):
+        for sample in range(0, number_of_samples):
             yield random.sample(bit_choices, chromosome_length)
 
-    def next_generation(self, mutation_chance = 0.2, cutoff_divider=2): #TO-DO: Implement this properly
+    def next_generation(self, mutation_chance = 0.2, cutoff_divider=2):
         """Generate a new population from the current one"""
         prev_generation_size = len(self.chromosomes)
         cutoff = prev_generation_size//cutoff_divider
         new_generation = []
         prev_fitnesses = self.get_chromosomes_fitness()
         prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
-        new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::] ]
+        new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::]]
 
         while len(new_generation) < prev_generation_size:
             chr1 = new_generation[random.randrange(0, len(new_generation))]
@@ -54,9 +57,8 @@ class Population():
         self.set_chromosomes(new_population) #Update the population
 
     def _random_crossover(self, chr1, chr2):
-        """Yield 2 offspring of 2 parent chromosomes using crossover operator. Using a random crossover point"""
+        """Yield 2 offspring of 2 parent chromosomes using crossover operator with a random crossover point"""
         return [crossed_chr for crossed_chr in self._crossover(chr1, chr2, random.randrange(0, len(chr1)))]
-            
 
     def _crossover(self, chr1, chr2, crossover_point):
         """Yield 2 offspring of 2 parent chromosomes using crossover operator"""

@@ -1,6 +1,7 @@
 from Genetic import Population
 
 class ExampleProblems():
+    """Object containing some example problems for the genetic algorithm."""
     def __init__(self):
         pass
 
@@ -45,9 +46,57 @@ class ExampleProblems():
             elif c % 9 == 1:
                 fitness += c*2
             else:
-                fitness -= c 
-        return fitness 
+                fitness -= c
+        return fitness
 
+    def shop_problem(self, chromosome):
+        """
+        Chromosome length must be 8
+        A fictional example of 8 shops, each with different rules on
+        thier profits, based on other shops being open.
+
+        shop | profit | rules
+        A       100     no D
+        B       800     no D, no A
+        C       600     no B
+        D       150     no G, 200 if H is also open
+        E       180     260 if G is also open
+        F       400     no H
+        G       80      220 if D
+        H       380     no F, no A
+        """
+        score = 0
+        a,b,c,d,e,f,g,h = [bool(i) for i in chromosome]
+
+        #A
+        if (g and not d):
+            score += 400
+        elif (not d):
+            score += 100
+        #B
+        if (not d and not a):
+            score += 800
+        #C
+        if (not b):
+            score += 600
+        #D
+        if (not g and h):
+            score += 200
+        elif (not g):
+            score += 150
+        #F
+        if (not h):
+            score += 400
+        #G
+        if (d):
+            score += 220
+        else:
+            score += 80
+        #H
+        if (not f and not a):
+            score += 380
+
+        return score
 
 
 def main():
@@ -63,8 +112,8 @@ def main():
     pop.set_chromosomes(pop.generate_random_sample(10, 100))
 
     #Define our fitness function. This will be what we're trying to maximise and will
-    #   be specific to any problem that we are trying to solve.
-    pop.set_fitness_function(problems.summer)
+    # be specific to any problem that we are trying to solve.
+    pop.set_fitness_function(problems.oddsy_evensy)
 
     #Some basic options for our simulation:
 
@@ -73,7 +122,7 @@ def main():
     #When we select the fittest candidates during the next generation creation, this is the fraction
     # of the top amount we want to keep. E.g cutoff_divider of 4 means that we keep the top 1/4
     # of the population
-    cutoff_divider = 4 
+    cutoff_divider = 4
     #The chance for a random bit to mutate when generating new children.
     mutation_chance = 0.1
     #Echo some text to the screen when the simulation is finished
