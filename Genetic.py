@@ -33,9 +33,23 @@ class Population():
 
     def next_generation(self, mutation_chance = 0.2): #TO-DO: Implement this properly
         """Generate a new population from the current one"""
-        new_population = [self._mutate(chromosome, mutation_chance) for chromosome in self.chromosomes]
+        prev_generation_size = len(self.chromosomes)
+        cutoff = prev_generation_size//2 
+        new_generation = []
+        prev_fitnesses = self.get_chromosomes_fitness()
+        prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
+        new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::] ]
 
-        self.set_chromosomes(new_population)
+        while len(new_generation) < prev_generation_size:
+            chr1 = new_generation[random.randrange(0, len(new_generation))]
+            chr2 = new_generation[random.randrange(0, len(new_generation))]
+            chr3, chr4 = self._random_crossover(chr1, chr2)
+            new_generation.append(chr3)
+            new_generation.append(chr4)
+
+        new_population = [self._mutate(chromosome, mutation_chance) for chromosome in new_generation]
+
+        self.set_chromosomes(new_population) #Update the population
 
     def _random_crossover(self, chr1, chr2):
         """Yield 2 offspring of 2 parent chromosomes using crossover operator. Using a random crossover point"""
@@ -56,9 +70,12 @@ class Population():
 
     def simulate(self, number_of_generations, mutation_chance=0.2): #TO-DO: implement this properly
         """Simulate a given number of generations and return the final population"""
+        max_fitnesses = []
         for g in range(0, number_of_generations):
             self.next_generation(mutation_chance)
             print(self.chromosomes)
+            max_fitnesses.append(self.get_chromosomes_fitness()[0][1])
+        print("Max fitness over {number_of_generations} generations: {maxes}".format(maxes=max_fitnesses, number_of_generations=number_of_generations))
 
 
 def main():

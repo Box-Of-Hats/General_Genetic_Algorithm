@@ -44,19 +44,19 @@ def main():
 
     #pop.set_chromosomes(["00110101", "01010101"])
     #pop.set_chromosomes(pop.all_possibilities(16))
-    pop.set_chromosomes(pop.generate_random_sample(4, 8))
+    pop.set_chromosomes(pop.generate_random_sample(4, 100))
 
-    pop.set_fitness_function(problems.weird_oddsy_evensy)
+    pop.set_fitness_function(problems.summer)
 
-    print(pop.chromosomes)
-    for f in pop.get_chromosomes_fitness():
-        print(f)
+    #print(pop.chromosomes)
+    #print(pop.get_chromosomes_fitness()[0])
 
-    pop.next_generation(0.2)
+    #pop.next_generation(0.2)
 
-    print(pop.chromosomes)
-    for f in pop.get_chromosomes_fitness():
-        print(f)
+    #print(pop.chromosomes)
+    #print(pop.get_chromosomes_fitness()[0])
+
+    pop.simulate(1000, mutation_chance=0.1)
 
 if __name__ == "__main__":
     main()
