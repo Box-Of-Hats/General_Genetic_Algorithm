@@ -8,6 +8,7 @@ class ExampleProblems():
     def oddsy_evensy(self, chromosome):
         """
         A problem where we want a string to contain alternating 0s and 1s.
+        e.g 10101010101...
         """
         fitness = 0
         for c, i in enumerate(chromosome):
@@ -109,11 +110,11 @@ def main():
 
     #Generate a random sample of 10 chromosomes to be our starting population,
     # each with a length of 100 bits.
-    pop.set_chromosomes(pop.generate_random_sample(10, 100))
+    pop.chromosomes = pop.generate_random_sample(10, 100)
 
     #Define our fitness function. This will be what we're trying to maximise and will
     # be specific to any problem that we are trying to solve.
-    pop.set_fitness_function(problems.oddsy_evensy)
+    pop.fitness_function = problems.oddsy_evensy
 
     #Some basic options for our simulation:
 
@@ -122,16 +123,14 @@ def main():
     #When we select the fittest candidates during the next generation creation, this is the fraction
     # of the top amount we want to keep. E.g cutoff_divider of 4 means that we keep the top 1/4
     # of the population
-    cutoff_divider = 4
+    pop.cutoff_divider = 2
     #The chance for a random bit to mutate when generating new children.
-    mutation_chance = 0.1
-    #Echo some text to the screen when the simulation is finished
-    echo = True
-    #Plot the simulations on a graph when the simulation is finished
-    plot = True
+    pop.mutation_chance = 0.1
+    #The chance that a crossover will take place between 2 random chromosomes
+    pop.crossover_chance = 1
 
     #Carry out the simulation
-    pop.simulate(number_of_generations=number_of_generations, mutation_chance=mutation_chance, cutoff_divider=cutoff_divider, echo=echo, plot=plot)
+    pop.simulate(number_of_generations=number_of_generations, echo=True, plot=True)
 
 
 if __name__ == "__main__":
