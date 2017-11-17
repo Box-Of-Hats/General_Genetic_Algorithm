@@ -25,7 +25,8 @@ class Population():
         self._crossover_method = 0
         self._crossover_methods = {
             0: self._random_single_point_crossover,
-            1: self._random_two_point_crossover
+            1: self._random_two_point_crossover,
+            2: self._fixed_common_feature_crossover,
         }
 
     def _cutoff_selection(self, num_to_select=2):
@@ -97,12 +98,11 @@ class Population():
         while len(new_generation) < prev_generation_size:
             #Select 2 chromosomes from current generation:
             chr1, chr2 = self._selection_methods[self._selection_method](2)
-            #Crossover these chromosomes:
-            #chr3, chr4 = self._crossover_methods[self._crossover_method](chr1, chr2)
+            #Crossover these chromosomes (using a set chance):
             chr3, chr4 = self.crossover(chr1, chr2)
             new_generation.append(chr3)
             new_generation.append(chr4)
-
+        #Mutate the new population with a given chance:
         new_population = [self._mutate(chromosome) for chromosome in new_generation]
 
         self.chromosomes = new_population #Update the population
@@ -110,13 +110,11 @@ class Population():
     def crossover(self, chr1, chr2):
         """Do the selected crossover with the selected crossover chance"""
         if random.random() <= self._crossover_chance:
-            #print(self._crossover_methods[self._crossover_method](chr1, chr2))
             for crossover_chr in self._crossover_methods[self._crossover_method](chr1, chr2):
                 yield crossover_chr
         else:
             yield chr1
             yield chr2
-
 
     def _random_single_point_crossover(self, chr1, chr2):
         """Yield 2 offspring of 2 parent chromosomes using crossover operator with a random crossover point"""
@@ -124,12 +122,8 @@ class Population():
 
     def _single_point_crossover(self, chr1, chr2, crossover_point):
         """Yield 2 offspring of 2 parent chromosomes using crossover operator"""
-        #if random.random() <= self._crossover_chance:
         yield chr1[:crossover_point] + chr2[crossover_point::]
         yield chr2[:crossover_point] + chr1[crossover_point::]
-        #else:
-        #    yield chr1
-        #    yield chr2
 
     def _random_two_point_crossover(self, chr1, chr2):
         rand_index_a = random.randrange(0, len(chr1))
@@ -150,6 +144,19 @@ class Population():
         chr3 = keep_chr1_s + chr2_swap + keep_chr1_e
         chr4 = keep_chr2_s + chr1_swap + keep_chr2_e
 
+        yield chr3
+        yield chr4
+
+    def _fixed_common_feature_crossover(self, chr1, chr2):
+        chr3 = []
+        chr4 = []
+        for c1, c2 in zip(chr1, chr2):
+            if c1 == c2:
+                chr3.append(c1)
+                chr4.append(c1)
+            else:
+                chr3.append(c2)
+                chr4.append(c1)
         yield chr3
         yield chr4
 
@@ -253,16 +260,16 @@ class Population():
         return self._selection_method
 
     def _set_crossover_method(self, new_method):
-        if isinstance(new_method, int):
+        if new_method in self._crossover_methods:
             self._crossover_method = new_method
         else:
-            raise TypeError("Method must be an integer index.")
+            raise TypeError("Crossover method is not recognised.\n\tMust be in {}".format(list(self._crossover_methods.keys())))
 
     def _set_selection_method(self, new_method):
-        if isinstance(new_method, int):
+        if new_method in self._selection_methods:
             self._selection_method = new_method
         else:
-            raise TypeError("Method must be an integer index.")
+            raise TypeError("Selection method is not recognised.\n\tMust be in {}".format(list(self._selection_methods.keys())))
 
 
 
