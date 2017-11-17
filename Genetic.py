@@ -1,6 +1,13 @@
 import itertools
 import random
 
+"""
+TODO:
+    Add break condition options to simulation. e.g Reaching a set fitness
+    Implement Roulette selection
+    Implement Stochastic universal sampling selection
+"""
+
 class Population():
     def __init__(self):
         self._chromosomes = None
@@ -10,9 +17,61 @@ class Population():
         self._chromosome_length = 0
         self._cutoff_divider = 2
 
+        self._selection_method = 0
+
+        self._selection_methods = {
+            0: self._cutoff_selection,
+            1: self._roulette_selection,
+        }
+
+    def _cutoff_selection(self):
+        """Return a chromosome from current population, using cutoff selection"""
+        prev_generation_size = len(self.chromosomes)
+        cutoff = prev_generation_size//self._cutoff_divider
+        #new_generation = []
+        prev_fitnesses = self.get_chromosomes_fitness()
+        prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
+        new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::]]
+        return random.choice(new_generation)
+
+        #while len(new_generation) < prev_generation_size:
+        #    chr1 = new_generation[random.randrange(0, len(new_generation))]
+        #    chr2 = new_generation[random.randrange(0, len(new_generation))]
+        #    chr3, chr4 = self._random_crossover(chr1, chr2)
+        #    new_generation.append(chr3)
+        #    new_generation.append(chr4)
+
+        #new_population = [self._mutate(chromosome) for chromosome in new_generation]
+
+        #self.chromosomes = new_population #Update the population
+
+    def _roulette_selection(self):
+        """Return a chromosome from current population, using roulette selection"""
+        prev_fitnesses = self.get_chromosomes_fitness()
+        prev_sorted_by_fitness = [x[0] for x in sorted(prev_fitnesses, key=lambda x: x[1])]
+        total_fitness = sum(x[1] for x in prev_fitnesses)
+        p_values = []
+        q_values = []
+
+        for x in prev_sorted_by_fitness:
+            f = self.get_fitness(x)
+            px = f/total_fitness
+            p_values.append(px)
+            print("{}: {}".format(f, px))
+
+        cum_p = 0
+        for index, p  in enumerate(p_values):
+            #qx = sum(p_values[0:index+1])
+            qx = cum_p + p
+            print(qx)
+
     def get_fitness(self, chromosome):
         """Get the fitness of a given chromosome based on the population fitness function"""
-        return self.fitness_function(chromosome)
+        f = self.fitness_function(chromosome) 
+        if f <= 0:
+            return 0
+        else:
+            return f 
 
     def get_chromosomes_fitness(self):
         """Return a list of chromosome, fitness tuples, sorted in descending order of fitness"""
@@ -31,15 +90,19 @@ class Population():
     def next_generation(self):
         """Generate a new population from the current one and replaces it."""
         prev_generation_size = len(self.chromosomes)
-        cutoff = prev_generation_size//self._cutoff_divider
+        #cutoff = prev_generation_size//self._cutoff_divider
         new_generation = []
-        prev_fitnesses = self.get_chromosomes_fitness()
-        prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
-        new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::]]
+        #prev_fitnesses = self.get_chromosomes_fitness()
+        #prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
+        #new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::]]
 
         while len(new_generation) < prev_generation_size:
-            chr1 = new_generation[random.randrange(0, len(new_generation))]
-            chr2 = new_generation[random.randrange(0, len(new_generation))]
+            #DEL#chr1 = new_generation[random.randrange(0, len(new_generation))]
+            #DEL#chr2 = new_generation[random.randrange(0, len(new_generation))]
+            #chr1 = self._cutoff_selection()
+            #chr2 = self._cutoff_selection()
+            chr1 = self._selection_methods[self._selection_method]()
+            chr2 = self._selection_methods[self._selection_method]()
             chr3, chr4 = self._random_crossover(chr1, chr2)
             new_generation.append(chr3)
             new_generation.append(chr4)
@@ -140,7 +203,7 @@ class Population():
 
     def _set_chromosomes(self, chromosome_list):
         self._chromosomes = [[int(chr) for chr in chromosome] for chromosome in chromosome_list]
-        self._set_chromosome_lenth(len(self._chromosomes))
+        self._set_chromosome_lenth(len(self._chromosomes[0]))
 
     def _get_chromosomes(self):
         return self._chromosomes

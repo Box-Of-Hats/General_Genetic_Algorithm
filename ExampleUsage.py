@@ -114,7 +114,7 @@ def main():
 
     #Define our fitness function. This will be what we're trying to maximise and will
     # be specific to any problem that we are trying to solve.
-    pop.fitness_function = problems.oddsy_evensy
+    pop.fitness_function = problems.summer
 
     #Some basic options for our simulation:
 
@@ -129,6 +129,9 @@ def main():
     #The chance that a crossover will take place between 2 random chromosomes
     pop.crossover_chance = 1
 
+    #Selection method to use for crossover
+    pop._selection_method = 0
+    
     #Carry out the simulation
     pop.simulate(number_of_generations=number_of_generations, echo=True, plot=True)
 
