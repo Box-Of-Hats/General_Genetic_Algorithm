@@ -11,11 +11,11 @@ class ExampleProblems():
         e.g 10101010101...
         """
         fitness = 0
-        for c, i in enumerate(chromosome):
-            if c % 2 == 0:
-                fitness += c * i
+        for index, c in enumerate(chromosome):
+            if index % 2 == 0:
+                fitness -= c
             else:
-                fitness -= c * i
+                fitness += c
         return fitness
 
     def summer(self, chromosome):
@@ -110,28 +110,27 @@ def main():
 
     #Generate a random sample of 10 chromosomes to be our starting population,
     # each with a length of 100 bits.
-    pop.chromosomes = pop.generate_random_sample(10, 100)
+    pop.chromosomes = pop.generate_random_sample(10, 1000)
 
     #Define our fitness function. This will be what we're trying to maximise and will
     # be specific to any problem that we are trying to solve.
-    pop.fitness_function = problems.summer
+    pop.fitness_function = problems.oddsy_evensy
 
     #Some basic options for our simulation:
-
-    #The number of generations our simulation should go through
-    number_of_generations = 1000
 
     #The chance for a random bit to mutate when generating new children.
     pop.mutation_chance = 0.1
     #The chance that a crossover will take place between 2 random chromosomes
     pop.crossover_chance = 0.8
     #Selection method to use for crossover
-    pop.selection_method = 0
+    pop.selection_method = "cutoff"
     #Crossover method to use for crossover
-    pop.crossover_method = 0
+    pop.crossover_method = "1_point"
+    #Choose a break condition:
+    pop.set_break_condition("fitness", 500)
 
     #Carry out the simulation
-    pop.simulate(number_of_generations=number_of_generations, echo=True, plot=True)
+    pop.simulate(echo=True, plot=True)
 
 if __name__ == "__main__":
     main()

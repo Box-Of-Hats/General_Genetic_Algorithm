@@ -3,8 +3,7 @@ import random
 
 """
 TODO:
-    Add break condition options to simulation. e.g Reaching a set fitness
-    Implement Roulette selection
+    
 """
 
 class Population():
@@ -14,19 +13,26 @@ class Population():
         self._crossover_chance = 1
         self._fitness_function = lambda x: 0
         self._chromosome_length = 0
+        self._break_condition = "generation"
+        self._break_value = 1000
+        self._generation_count = 0
 
-        self._selection_method = 0
-
+        self._selection_method = "cutoff"
+        self._crossover_method = "1_point"
         self._selection_methods = {
-            0: self._cutoff_selection,
-            1: self._roulette_selection,
+            "cutoff": self._cutoff_selection,
+            "roulette": self._roulette_selection,
         }
-
-        self._crossover_method = 0
         self._crossover_methods = {
-            0: self._random_single_point_crossover,
-            1: self._random_two_point_crossover,
-            2: self._fixed_common_feature_crossover,
+            "1_point": self._random_single_point_crossover,
+            "2_point": self._random_two_point_crossover,
+            "fixed_common": self._fixed_common_feature_crossover,
+        }
+        self._break_conditions = {
+            "generation": {"func": lambda: self._generation_count >= self._break_value,
+                           "var": lambda: self._generation_count},
+            "fitness": {"func": lambda: self._get_fittest_chromosome()[1] >= self._break_value,
+                        "var": lambda: self._get_fittest_chromosome()[1]},
         }
 
     def _cutoff_selection(self, num_to_select=2):
@@ -90,23 +96,6 @@ class Population():
         for sample in range(0, number_of_samples):
             yield random.sample(bit_choices, chromosome_length)
 
-    def next_generation(self):
-        """Generate a new population from the current one and replaces it."""
-        prev_generation_size = len(self.chromosomes)
-        new_generation = []
-
-        while len(new_generation) < prev_generation_size:
-            #Select 2 chromosomes from current generation:
-            chr1, chr2 = self._selection_methods[self._selection_method](2)
-            #Crossover these chromosomes (using a set chance):
-            chr3, chr4 = self.crossover(chr1, chr2)
-            new_generation.append(chr3)
-            new_generation.append(chr4)
-        #Mutate the new population with a given chance:
-        new_population = [self._mutate(chromosome) for chromosome in new_generation]
-
-        self.chromosomes = new_population #Update the population
-
     def crossover(self, chr1, chr2):
         """Do the selected crossover with the selected crossover chance"""
         if random.random() <= self._crossover_chance:
@@ -167,24 +156,49 @@ class Population():
             chromosome[flip_index] = (chromosome[flip_index] + 1) % 2
         return chromosome
 
-    def simulate(self, number_of_generations, echo=True, plot=True):
+    def _has_reached_break_generation(self, echo=False):
+        """Check if the current generation fulfils a stopping criteria"""
+        if echo:
+            print("{name}\t{current_value} / {break_value}".format(name=self._break_condition,
+                                                                   current_value=self._break_conditions[self._break_condition]["var"](),
+                                                                   break_value=self._break_value),
+                                                                   end="\r")
+
+        return self._break_conditions[self._break_condition]["func"]()
+
+
+    def next_generation(self):
+        """Generate a new population from the current one and replaces it."""
+        prev_generation_size = len(self.chromosomes)
+        new_generation = []
+
+        while len(new_generation) < prev_generation_size:
+            #Select 2 chromosomes from current generation:
+            chr1, chr2 = self._selection_methods[self._selection_method](2)
+            #Crossover these chromosomes (using a set chance):
+            chr3, chr4 = self.crossover(chr1, chr2)
+            new_generation.append(chr3)
+            new_generation.append(chr4)
+        #Mutate the new population with a given chance:
+        new_population = [self._mutate(chromosome) for chromosome in new_generation]
+
+        self.chromosomes = new_population #Update the population
+
+    def simulate(self, echo=True, plot=True):
         """Simulate a given number of generations and return the final population"""
         max_fitnesses = []
         avg_fitnesses = []
-        gen_step = number_of_generations//10
-
-        for generation_no in range(0, number_of_generations):
+        self._generation_count = 0
+        while(not self._has_reached_break_generation(echo=echo)):
+            self._generation_count += 1
             self.next_generation()
-
-            if (echo and generation_no % gen_step == 0):
-                print("{}\t/\t{}".format(generation_no, number_of_generations), end="\r")
 
             if plot:
                 max_fitnesses.append(self.fittest_chromosome[1])
                 avg_fitnesses.append(self.average_fitness)
 
         if echo:
-            print("After {number_of_generations} generations:".format(number_of_generations=number_of_generations))
+            print("After {number_of_generations} generations:".format(number_of_generations=self._generation_count))
             print("Current Average Fitness: {avg_fitness}".format(avg_fitness=self.average_fitness))
             print("Current Max Fitness: {maxes}".format(maxes=self.fittest_chromosome[1]))
             print("Current Fittest: {fittest}".format(fittest=self.fittest_chromosome[0]))
@@ -271,7 +285,13 @@ class Population():
         else:
             raise TypeError("Selection method is not recognised.\n\tMust be in {}".format(list(self._selection_methods.keys())))
 
-
+    def set_break_condition(self, condition_name, condition_value):
+        if condition_name in self._break_conditions:
+            #self._break_conditions[condition_name]["var"] = condition_value
+            self._break_value = condition_value
+            self._break_condition = condition_name
+        else:
+            raise KeyError("Invalid condition name.\n\tMust be in {}".format(list(self._break_conditions.keys())))
 
     chromosome_lenth = property(_get_chromosome_length, _set_chromosome_lenth)
     average_fitness = property(_get_average_fitness, None)
