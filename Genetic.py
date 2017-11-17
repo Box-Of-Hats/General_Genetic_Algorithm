@@ -216,6 +216,9 @@ class Population():
             plt.xlabel("Generation")
             plt.show()
 
+        if plot:
+            return [max_fitnesses, avg_fitnesses]
+
     """
         Getters and setters:
     """

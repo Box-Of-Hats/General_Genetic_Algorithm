@@ -1,9 +1,22 @@
 from Genetic import Population
+import random
 
 class ExampleProblems():
     """Object containing some example problems for the genetic algorithm."""
-    def __init__(self):
-        pass
+    def __init__(self, number_of_items=100):
+        self.knapsack_items = self._randomise_knapsack_items(number_of_items)
+        self.knapsack_allowance = 4000
+
+    def _randomise_knapsack_items(self, number_of_values=10):
+        items = []
+        print("-\tValue\tWeight")
+        for i in range(0, number_of_values):
+            value = random.randrange(0, 100)
+            weight = random.randrange(0,100)
+            items.append({"value": value, "weight": weight})
+            print("Item {}:\t{}\t{}".format(i, value, weight))
+        return items
+            
 
     def oddsy_evensy(self, chromosome):
         """
@@ -99,6 +112,16 @@ class ExampleProblems():
 
         return score
 
+    def knapsack(self, chromosome):
+        weight = 0
+        value = 0
+        for item, pickup in zip(self.knapsack_items, chromosome):
+            value += item["value"] * pickup
+            weight += item["weight"] * pickup
+            if weight > self.knapsack_allowance:
+                return 0
+        return value
+
 
 def main():
     #An object containing some sample problems that
@@ -108,13 +131,13 @@ def main():
     #Initialise the Population object
     pop = Population()
 
-    #Generate a random sample of 10 chromosomes to be our starting population,
-    # each with a length of 100 bits.
-    pop.chromosomes = pop.generate_random_sample(10, 1000)
+    #Generate a random sample of x chromosomes to be our starting population,
+    # each with a length of y bits.
+    pop.chromosomes = pop.generate_random_sample(50, 100)
 
     #Define our fitness function. This will be what we're trying to maximise and will
     # be specific to any problem that we are trying to solve.
-    pop.fitness_function = problems.oddsy_evensy
+    pop.fitness_function = problems.knapsack
 
     #Some basic options for our simulation:
 
@@ -127,7 +150,7 @@ def main():
     #Crossover method to use for crossover
     pop.crossover_method = "1_point"
     #Choose a break condition:
-    pop.set_break_condition("fitness", 500)
+    pop.set_break_condition("generation", 200)
 
     #Carry out the simulation
     pop.simulate(echo=True, plot=True)
