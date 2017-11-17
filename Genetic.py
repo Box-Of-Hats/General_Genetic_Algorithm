@@ -3,7 +3,7 @@ import random
 
 """
 TODO:
-    
+    Implement Tournament Selection
 """
 
 class Population():
@@ -22,6 +22,7 @@ class Population():
         self._selection_methods = {
             "cutoff": self._cutoff_selection,
             "roulette": self._roulette_selection,
+            "tournament": self._tournament_selection,
         }
         self._crossover_methods = {
             "1_point": self._random_single_point_crossover,
@@ -73,6 +74,18 @@ class Population():
                 else:
                     if (r <= q and r > q_values[index-1]):
                         yield prev_sorted_by_fitness[index]
+
+    def _tournament_selection(self, num_to_select=2):
+        #raise Exception("Tournament selector isn't implemented yet.")
+        for c in range(0, num_to_select):
+            chr1 = random.choice(self.chromosomes)
+            chr2 = random.choice(self.chromosomes)
+            chr1_fitness = self.get_fitness(chr1)
+            chr2_fitness = self.get_fitness(chr2)
+            if chr1_fitness >= chr2_fitness:
+                yield chr1
+            else:
+                yield chr2
 
     def get_fitness(self, chromosome):
         """Get the fitness of a given chromosome based on the population fitness function"""
@@ -159,9 +172,10 @@ class Population():
     def _has_reached_break_generation(self, echo=False):
         """Check if the current generation fulfils a stopping criteria"""
         if echo:
-            print("{name}\t{current_value} / {break_value}".format(name=self._break_condition,
+            print("{name}\t{current_value} / {break_value}\t {percentage:.1f}%".format(name=self._break_condition,
                                                                    current_value=self._break_conditions[self._break_condition]["var"](),
-                                                                   break_value=self._break_value),
+                                                                   break_value=self._break_value,
+                                                                   percentage=self._break_conditions[self._break_condition]["var"]()/self._break_value*100),
                                                                    end="\r")
 
         return self._break_conditions[self._break_condition]["func"]()
@@ -209,7 +223,7 @@ class Population():
             max_fitness_plot = plt.plot(max_fitnesses)
             avg_fitness_plot = plt.plot(avg_fitnesses)
             plt.setp(max_fitness_plot, linewidth=3, color='c', label="Max Fitness")
-            plt.setp(avg_fitness_plot, linewidth=3, color='b', label="Avg Fitness")
+            plt.setp(avg_fitness_plot, linewidth=2, color='y', label="Avg Fitness")
             plt.legend(loc=0)
             plt.rcParams.update({'font.size': 18})
             plt.ylabel("Fitness")

@@ -3,11 +3,12 @@ import random
 
 class ExampleProblems():
     """Object containing some example problems for the genetic algorithm."""
-    def __init__(self, number_of_items=100):
+    def __init__(self, number_of_items=500):
         self.knapsack_items = self._randomise_knapsack_items(number_of_items)
-        self.knapsack_allowance = 4000
+        self.knapsack_allowance = number_of_items * 35
 
     def _randomise_knapsack_items(self, number_of_values=10):
+        """Generate items for knapsack problem with random values/weights"""
         items = []
         print("-\tValue\tWeight")
         for i in range(0, number_of_values):
@@ -18,7 +19,7 @@ class ExampleProblems():
         return items
             
 
-    def oddsy_evensy(self, chromosome):
+    def alternating_ones_and_zeroes(self, chromosome):
         """
         A problem where we want a string to contain alternating 0s and 1s.
         e.g 10101010101...
@@ -31,7 +32,7 @@ class ExampleProblems():
                 fitness += c
         return fitness
 
-    def summer(self, chromosome):
+    def list_of_ones(self, chromosome):
         """
         A problem where we want to have a string containing as many 1s as
         possible. This function calculates fitness but summing the bits
@@ -42,7 +43,7 @@ class ExampleProblems():
             fitness += i
         return fitness
 
-    def weird_oddsy_evensy(self, chromosome):
+    def weird_factors(self, chromosome):
         """
         A somewhat random problem.
         An example of how problems can be more complex and non-trivial.
@@ -133,7 +134,7 @@ def main():
 
     #Generate a random sample of x chromosomes to be our starting population,
     # each with a length of y bits.
-    pop.chromosomes = pop.generate_random_sample(50, 100)
+    pop.chromosomes = pop.generate_random_sample(50, 500)
 
     #Define our fitness function. This will be what we're trying to maximise and will
     # be specific to any problem that we are trying to solve.
@@ -146,11 +147,11 @@ def main():
     #The chance that a crossover will take place between 2 random chromosomes
     pop.crossover_chance = 0.8
     #Selection method to use for crossover
-    pop.selection_method = "cutoff"
+    pop.selection_method = "tournament"
     #Crossover method to use for crossover
     pop.crossover_method = "1_point"
     #Choose a break condition:
-    pop.set_break_condition("generation", 200)
+    pop.set_break_condition("generation", 1000)
 
     #Carry out the simulation
     pop.simulate(echo=True, plot=True)
