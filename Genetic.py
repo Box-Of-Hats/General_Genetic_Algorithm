@@ -155,8 +155,8 @@ class Population():
                 chr3.append(c1)
                 chr4.append(c1)
             else:
-                chr3.append(c2)
-                chr4.append(c1)
+                chr3.append(random.choice([0,1]))
+                chr4.append(random.choice([0,1]))
         yield chr3
         yield chr4
 
