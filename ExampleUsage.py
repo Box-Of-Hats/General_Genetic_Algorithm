@@ -120,21 +120,18 @@ def main():
 
     #The number of generations our simulation should go through
     number_of_generations = 1000
-    #When we select the fittest candidates during the next generation creation, this is the fraction
-    # of the top amount we want to keep. E.g cutoff_divider of 4 means that we keep the top 1/4
-    # of the population
-    pop.cutoff_divider = 2
+
     #The chance for a random bit to mutate when generating new children.
     pop.mutation_chance = 0.1
     #The chance that a crossover will take place between 2 random chromosomes
-    pop.crossover_chance = 1
-
+    pop.crossover_chance = 0.8
     #Selection method to use for crossover
-    pop._selection_method = 0
-    
+    pop.selection_method = 0
+    #Crossover method to use for crossover
+    pop.crossover_method = 0
+
     #Carry out the simulation
     pop.simulate(number_of_generations=number_of_generations, echo=True, plot=True)
-
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,6 @@ import random
 TODO:
     Add break condition options to simulation. e.g Reaching a set fitness
     Implement Roulette selection
-    Implement Stochastic universal sampling selection
 """
 
 class Population():
@@ -15,7 +14,6 @@ class Population():
         self._crossover_chance = 1
         self._fitness_function = lambda x: 0
         self._chromosome_length = 0
-        self._cutoff_divider = 2
 
         self._selection_method = 0
 
@@ -24,29 +22,24 @@ class Population():
             1: self._roulette_selection,
         }
 
-    def _cutoff_selection(self):
-        """Return a chromosome from current population, using cutoff selection"""
+        self._crossover_method = 0
+        self._crossover_methods = {
+            0: self._random_single_point_crossover,
+            1: self._random_two_point_crossover
+        }
+
+    def _cutoff_selection(self, num_to_select=2):
+        """Return x number of chromosomes from current population, using cutoff selection"""
         prev_generation_size = len(self.chromosomes)
-        cutoff = prev_generation_size//self._cutoff_divider
-        #new_generation = []
+        cutoff = prev_generation_size//2
         prev_fitnesses = self.get_chromosomes_fitness()
         prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
         new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::]]
-        return random.choice(new_generation)
+        for c in range(0, num_to_select):
+            yield random.choice(new_generation)
 
-        #while len(new_generation) < prev_generation_size:
-        #    chr1 = new_generation[random.randrange(0, len(new_generation))]
-        #    chr2 = new_generation[random.randrange(0, len(new_generation))]
-        #    chr3, chr4 = self._random_crossover(chr1, chr2)
-        #    new_generation.append(chr3)
-        #    new_generation.append(chr4)
-
-        #new_population = [self._mutate(chromosome) for chromosome in new_generation]
-
-        #self.chromosomes = new_population #Update the population
-
-    def _roulette_selection(self):
-        """Return a chromosome from current population, using roulette selection"""
+    def _roulette_selection(self, num_to_select=2):
+        """Return x number of chromosomes from current population, using roulette selection"""
         prev_fitnesses = self.get_chromosomes_fitness()
         prev_sorted_by_fitness = [x[0] for x in sorted(prev_fitnesses, key=lambda x: x[1])]
         total_fitness = sum(x[1] for x in prev_fitnesses)
@@ -57,13 +50,22 @@ class Population():
             f = self.get_fitness(x)
             px = f/total_fitness
             p_values.append(px)
-            print("{}: {}".format(f, px))
 
         cum_p = 0
         for index, p  in enumerate(p_values):
-            #qx = sum(p_values[0:index+1])
-            qx = cum_p + p
-            print(qx)
+            cum_p += p_values[index]
+            qx = cum_p
+            q_values.append(qx)
+
+        for c in range(0, num_to_select):
+            r = random.random()
+            for index, q in enumerate(q_values):
+                if index == 0:
+                    if r <= q:
+                        yield prev_sorted_by_fitness[index]
+                else:
+                    if (r <= q and r > q_values[index-1]):
+                        yield prev_sorted_by_fitness[index]
 
     def get_fitness(self, chromosome):
         """Get the fitness of a given chromosome based on the population fitness function"""
@@ -90,20 +92,14 @@ class Population():
     def next_generation(self):
         """Generate a new population from the current one and replaces it."""
         prev_generation_size = len(self.chromosomes)
-        #cutoff = prev_generation_size//self._cutoff_divider
         new_generation = []
-        #prev_fitnesses = self.get_chromosomes_fitness()
-        #prev_sorted_by_fitness = sorted(prev_fitnesses, key=lambda x: x[1])
-        #new_generation = [x[0] for x in prev_sorted_by_fitness[cutoff::]]
 
         while len(new_generation) < prev_generation_size:
-            #DEL#chr1 = new_generation[random.randrange(0, len(new_generation))]
-            #DEL#chr2 = new_generation[random.randrange(0, len(new_generation))]
-            #chr1 = self._cutoff_selection()
-            #chr2 = self._cutoff_selection()
-            chr1 = self._selection_methods[self._selection_method]()
-            chr2 = self._selection_methods[self._selection_method]()
-            chr3, chr4 = self._random_crossover(chr1, chr2)
+            #Select 2 chromosomes from current generation:
+            chr1, chr2 = self._selection_methods[self._selection_method](2)
+            #Crossover these chromosomes:
+            #chr3, chr4 = self._crossover_methods[self._crossover_method](chr1, chr2)
+            chr3, chr4 = self.crossover(chr1, chr2)
             new_generation.append(chr3)
             new_generation.append(chr4)
 
@@ -111,18 +107,51 @@ class Population():
 
         self.chromosomes = new_population #Update the population
 
-    def _random_crossover(self, chr1, chr2):
-        """Yield 2 offspring of 2 parent chromosomes using crossover operator with a random crossover point"""
-        return [crossed_chr for crossed_chr in self._crossover(chr1, chr2, random.randrange(0, len(chr1)))]
-
-    def _crossover(self, chr1, chr2, crossover_point):
-        """Yield 2 offspring of 2 parent chromosomes using crossover operator"""
+    def crossover(self, chr1, chr2):
+        """Do the selected crossover with the selected crossover chance"""
         if random.random() <= self._crossover_chance:
-            yield chr1[:crossover_point] + chr2[crossover_point::]
-            yield chr2[:crossover_point] + chr1[crossover_point::]
+            #print(self._crossover_methods[self._crossover_method](chr1, chr2))
+            for crossover_chr in self._crossover_methods[self._crossover_method](chr1, chr2):
+                yield crossover_chr
         else:
             yield chr1
             yield chr2
+
+
+    def _random_single_point_crossover(self, chr1, chr2):
+        """Yield 2 offspring of 2 parent chromosomes using crossover operator with a random crossover point"""
+        return [crossed_chr for crossed_chr in self._single_point_crossover(chr1, chr2, random.randrange(0, len(chr1)))]
+
+    def _single_point_crossover(self, chr1, chr2, crossover_point):
+        """Yield 2 offspring of 2 parent chromosomes using crossover operator"""
+        #if random.random() <= self._crossover_chance:
+        yield chr1[:crossover_point] + chr2[crossover_point::]
+        yield chr2[:crossover_point] + chr1[crossover_point::]
+        #else:
+        #    yield chr1
+        #    yield chr2
+
+    def _random_two_point_crossover(self, chr1, chr2):
+        rand_index_a = random.randrange(0, len(chr1))
+        rand_index_b = random.randrange(0, len(chr1))
+        crossover_a = min(rand_index_a, rand_index_b)
+        crossover_b = max(rand_index_a, rand_index_b)
+        return [crossed_chr for crossed_chr in self._two_point_crossover(chr1, chr2, crossover_a, crossover_b)]
+
+    def _two_point_crossover(self, chr1, chr2, crossover_1, crossover_2):
+        keep_chr1_s = chr1[:crossover_1]
+        chr1_swap = chr1[crossover_1:crossover_2]
+        keep_chr1_e = chr1[crossover_2::]
+
+        keep_chr2_s = chr2[:crossover_1]
+        chr2_swap = chr2[crossover_1:crossover_2]
+        keep_chr2_e = chr2[crossover_2::]
+        
+        chr3 = keep_chr1_s + chr2_swap + keep_chr1_e
+        chr4 = keep_chr2_s + chr1_swap + keep_chr2_e
+
+        yield chr3
+        yield chr4
 
     def _mutate(self, chromosome):
         """Flip a random bit of a chromosome with a given probability"""
@@ -135,7 +164,7 @@ class Population():
         """Simulate a given number of generations and return the final population"""
         max_fitnesses = []
         avg_fitnesses = []
-        gen_step = number_of_generations//100
+        gen_step = number_of_generations//10
 
         for generation_no in range(0, number_of_generations):
             self.next_generation()
@@ -165,7 +194,6 @@ class Population():
             plt.ylabel("Fitness")
             plt.xlabel("Generation")
             plt.show()
-        #return max_fitnesses
 
     """
         Getters and setters:
@@ -207,13 +235,7 @@ class Population():
 
     def _get_chromosomes(self):
         return self._chromosomes
-
-    def _set_cutoff_divider(self, divider):
-        self._cutoff_divider = divider
-
-    def _get_cutoff_divider(self):
-        return self._cutoff_divider
-        
+     
     def _set_fitness_function(self, fitness_function):
         self._fitness_function = fitness_function
 
@@ -224,11 +246,32 @@ class Population():
         """Get the fittest chromosome of a population. Returns tup(chromosome, score)"""
         return self.get_chromosomes_fitness()[0]
 
+    def _get_crossover_method(self):
+        return self._crossover_method
+
+    def _get_selection_method(self):
+        return self._selection_method
+
+    def _set_crossover_method(self, new_method):
+        if isinstance(new_method, int):
+            self._crossover_method = new_method
+        else:
+            raise TypeError("Method must be an integer index.")
+
+    def _set_selection_method(self, new_method):
+        if isinstance(new_method, int):
+            self._selection_method = new_method
+        else:
+            raise TypeError("Method must be an integer index.")
+
+
+
     chromosome_lenth = property(_get_chromosome_length, _set_chromosome_lenth)
     average_fitness = property(_get_average_fitness, None)
     mutation_chance = property(_get_mutation_chance, _set_mutation_chance)
     crossover_chance = property(_get_crossover_chance, _set_crossover_chance)
     chromosomes = property(_get_chromosomes, _set_chromosomes)
     fitness_function = property(_get_fitness_function, _set_fitness_function)
-    cutoff_divider = property(_get_cutoff_divider, _set_cutoff_divider)
     fittest_chromosome = property(_get_fittest_chromosome)
+    crossover_method = property(_get_crossover_method, _set_crossover_method)
+    selection_method = property(_get_selection_method, _set_selection_method)
