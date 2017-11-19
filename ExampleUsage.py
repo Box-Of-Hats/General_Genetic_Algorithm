@@ -5,7 +5,20 @@ class ExampleProblems():
     """Object containing some example problems for the genetic algorithm."""
     def __init__(self, number_of_items=500):
         self.knapsack_items = self._randomise_knapsack_items(number_of_items)
-        self.knapsack_allowance = number_of_items * 35
+        self.knapsack_allowance = number_of_items * 30
+
+        self.problems = {"knapsack": lambda c: self.knapsack(c),
+                         "1010": lambda c: self.alternating_ones_and_zeroes(c),
+                         "1111": lambda c: self.list_of_ones(c),
+                         "weird_factors": lambda c: self.weird_factors(c),
+                         "shops": lambda c: self.shop_problem(c),
+        
+        }
+
+    def _get_problems(self):
+        return [problem_name for problem_name in self.problems]
+
+    problem_names = property(_get_problems)
 
     def _randomise_knapsack_items(self, number_of_values=10):
         """Generate items for knapsack problem with random values/weights"""

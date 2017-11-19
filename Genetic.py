@@ -3,7 +3,7 @@ import random
 
 """
 TODO:
-    Implement Tournament Selection
+
 """
 
 class Population():
@@ -76,7 +76,6 @@ class Population():
                         yield prev_sorted_by_fitness[index]
 
     def _tournament_selection(self, num_to_select=2):
-        #raise Exception("Tournament selector isn't implemented yet.")
         for c in range(0, num_to_select):
             chr1 = random.choice(self.chromosomes)
             chr2 = random.choice(self.chromosomes)
@@ -207,9 +206,9 @@ class Population():
             self._generation_count += 1
             self.next_generation()
 
-            if plot:
-                max_fitnesses.append(self.fittest_chromosome[1])
-                avg_fitnesses.append(self.average_fitness)
+            #if plot:
+            max_fitnesses.append(self.fittest_chromosome[1])
+            avg_fitnesses.append(self.average_fitness)
 
         if echo:
             print("After {number_of_generations} generations:".format(number_of_generations=self._generation_count))
@@ -230,8 +229,8 @@ class Population():
             plt.xlabel("Generation")
             plt.show()
 
-        if plot:
-            return [max_fitnesses, avg_fitnesses]
+        #if plot:
+        return [max_fitnesses, avg_fitnesses]
 
     """
         Getters and setters:
@@ -310,6 +309,12 @@ class Population():
         else:
             raise KeyError("Invalid condition name.\n\tMust be in {}".format(list(self._break_conditions.keys())))
 
+    def _get_selection_methods(self):
+        return [key for key in self._selection_methods]
+
+    def _get_crossover_methods(self):
+        return [key for key in self._crossover_methods]
+
     chromosome_lenth = property(_get_chromosome_length, _set_chromosome_lenth)
     average_fitness = property(_get_average_fitness, None)
     mutation_chance = property(_get_mutation_chance, _set_mutation_chance)
@@ -319,3 +324,5 @@ class Population():
     fittest_chromosome = property(_get_fittest_chromosome)
     crossover_method = property(_get_crossover_method, _set_crossover_method)
     selection_method = property(_get_selection_method, _set_selection_method)
+    selection_methods = property(_get_selection_methods)
+    crossover_methods = property(_get_crossover_methods)
