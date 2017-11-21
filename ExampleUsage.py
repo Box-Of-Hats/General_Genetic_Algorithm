@@ -1,4 +1,5 @@
 from Genetic import Population
+import math
 import random
 
 class ExampleProblems():
@@ -12,6 +13,8 @@ class ExampleProblems():
                          "1111": lambda c: self.list_of_ones(c),
                          "weird_factors": lambda c: self.weird_factors(c),
                          "shops": lambda c: self.shop_problem(c),
+                         "furthest_cannonball": lambda c: self.furthest_cannonball(c),
+
         
         }
 
@@ -94,6 +97,7 @@ class ExampleProblems():
         H       380     no F, no A
         """
         score = 0
+        chromosome = chromosome[0:8]
         a,b,c,d,e,f,g,h = [bool(i) for i in chromosome]
 
         #A
@@ -136,6 +140,34 @@ class ExampleProblems():
                 return 0
         return value
 
+    def furthest_cannonball(self, chromosome):
+        """
+        Try to launch a cannon ball as far as possible.
+        Minimum chromosome length of 8.
+        First 7 bits are a binary value, which is taken as the angle of launch. (range 0-127 degrees)
+        All following bits are taken as a binary value, which is the velocity of the launch
+
+        With these values, expected best is: [0,1,0,1,1,0,1, | 1*]
+         which represents a 45 degree launch at max velocity.
+
+        """
+        g = 9.8 #gravity
+
+        angle = 0
+
+        angle = int("".join([str(x) for x in chromosome[0:7]]), 2)
+        velocity = int("".join([str(x) for x in chromosome[7::]]), 2)
+        #print("Angle = {}".format(angle))
+        #print("Velocity = {}".format(velocity))
+
+        angle = math.radians(angle)
+
+        distance_launched = (velocity*velocity * math.sin( 2 * angle) )/ g
+        #print("Distance = {}".format(distance_launched))
+        if distance_launched <= 0:
+            return 0
+        else:
+            return distance_launched
 
 def main():
     #An object containing some sample problems that
