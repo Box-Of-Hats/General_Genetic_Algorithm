@@ -8,7 +8,8 @@ class ExampleProblems():
         self.knapsack_items = self._randomise_knapsack_items(number_of_items)
         self.knapsack_allowance = number_of_items * 30
 
-        self.problems = {"knapsack": lambda c: self.knapsack(c),
+        self.problems = {"none": lambda c: 1,
+                        "knapsack": lambda c: self.knapsack(c),
                          "1010": lambda c: self.alternating_ones_and_zeroes(c),
                          "1111": lambda c: self.list_of_ones(c),
                          "weird_factors": lambda c: self.weird_factors(c),
@@ -26,12 +27,12 @@ class ExampleProblems():
     def _randomise_knapsack_items(self, number_of_values=10):
         """Generate items for knapsack problem with random values/weights"""
         items = []
-        print("-\tValue\tWeight")
+        #print("-\tValue\tWeight")
         for i in range(0, number_of_values):
             value = random.randrange(0, 100)
             weight = random.randrange(0,100)
             items.append({"value": value, "weight": weight})
-            print("Item {}:\t{}\t{}".format(i, value, weight))
+            #print("Item {}:\t{}\t{}".format(i, value, weight))
         return items
             
 
