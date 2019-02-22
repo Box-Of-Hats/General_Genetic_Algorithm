@@ -36,6 +36,13 @@ class Population():
                         "var": lambda: self._get_fittest_chromosome()[1]},
         }
 
+    def chromosome_list_to_number(self, chromosome, max_value=False):
+        """Returns an integer value from a chromosome list. Treats it as binary."""
+        if max_value:
+            return int("".join([str(x) for x in chromosome]), 2) % max_value
+        else:
+            return int("".join([str(x) for x in chromosome]), 2)
+
     def _cutoff_selection(self, num_to_select=2):
         """Return x number of chromosomes from current population, using cutoff selection"""
         prev_generation_size = len(self.chromosomes)

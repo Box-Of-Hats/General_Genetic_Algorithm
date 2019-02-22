@@ -249,7 +249,7 @@ class GenerationStepThroughWindow(Frame):
         f = Figure(figsize=(10,5), dpi=100)
         a = f.add_subplot(1, 1, 1)
         a.set_xlabel('Generation')
-        a.set_ylabel('Max Fitness')
+        a.set_ylabel('Fitness')
 
         a.plot(self.max_fitnesses, linewidth=2, label="Max Fitness", marker="o")
         a.plot(self.average_fitnesses, linewidth=2, label="Avg Fitness", marker="o")
