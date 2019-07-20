@@ -81,7 +81,7 @@ class Window(Frame):
                 a.plot(pmax, linewidth=2, label="{}, {} [{:.0f}]".format(sm, cm, pop.fittest_chromosome[1]))
 
                 current_method_count += 1
-                
+
 
         a.set_title("{}".format(self.chosen_problem.get()))
         handles, labels = a.get_legend_handles_labels()
@@ -253,7 +253,7 @@ class GenerationStepThroughWindow(Frame):
 
         a.plot(self.max_fitnesses, linewidth=2, label="Max Fitness", marker="o")
         a.plot(self.average_fitnesses, linewidth=2, label="Avg Fitness", marker="o")
-                
+
 
         a.set_title("{}".format(self.chosen_problem.get()))
 
@@ -294,7 +294,7 @@ class GenerationStepThroughWindow(Frame):
 def main():
     root = Tk()
     app = GenerationStepThroughWindow(root)
-    root.mainloop() 
+    root.mainloop()
 
 if __name__ == "__main__":
     main()

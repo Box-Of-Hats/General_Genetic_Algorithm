@@ -16,7 +16,7 @@ class ExampleProblems():
                          "shops": lambda c: self.shop_problem(c),
                          "furthest_cannonball": lambda c: self.furthest_cannonball(c),
 
-        
+
         }
 
     def _get_problems(self):
@@ -34,7 +34,7 @@ class ExampleProblems():
             items.append({"value": value, "weight": weight})
             #print("Item {}:\t{}\t{}".format(i, value, weight))
         return items
-            
+
 
     def alternating_ones_and_zeroes(self, chromosome):
         """

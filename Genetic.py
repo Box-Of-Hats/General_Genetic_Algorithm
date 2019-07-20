@@ -95,11 +95,11 @@ class Population():
 
     def get_fitness(self, chromosome):
         """Get the fitness of a given chromosome based on the population fitness function"""
-        f = self.fitness_function(chromosome) 
+        f = self.fitness_function(chromosome)
         if f <= 0:
             return 0
         else:
-            return f 
+            return f
 
     def get_chromosomes_fitness(self):
         """Return a list of chromosome, fitness tuples, sorted in descending order of fitness"""
@@ -148,7 +148,7 @@ class Population():
         keep_chr2_s = chr2[:crossover_1]
         chr2_swap = chr2[crossover_1:crossover_2]
         keep_chr2_e = chr2[crossover_2::]
-        
+
         chr3 = keep_chr1_s + chr2_swap + keep_chr1_e
         chr4 = keep_chr2_s + chr1_swap + keep_chr2_e
 
@@ -248,7 +248,7 @@ class Population():
             raise ValueError("Mutation chance must be between 0 - 1.")
         else:
             self._mutation_chance = chance
-    
+
     def _get_mutation_chance(self):
         return self._mutation_chance
 
@@ -257,12 +257,12 @@ class Population():
             raise ValueError("Crossover chance must be between 0 - 1.")
         else:
             self._crossover_chance = chance
-    
+
     def _get_crossover_chance(self):
         return self._crossover_chance
 
     def _set_chromosome_lenth(self, length):
-        if isinstance(length, int): 
+        if isinstance(length, int):
             self._chromosome_length = length
         else:
             raise TypeError("Chromosome length must be int.")
@@ -279,7 +279,7 @@ class Population():
 
     def _get_chromosomes(self):
         return self._chromosomes
-     
+
     def _set_fitness_function(self, fitness_function):
         self._fitness_function = fitness_function
 

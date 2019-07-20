@@ -1,5 +1,6 @@
 import math
 
+
 class Problem():
     def __init__(self):
         self.parameters = {}
@@ -18,7 +19,6 @@ class Problem():
         self.parameters[name] = option_list
 
     def get_bitlist(self, param=None):
-
         """
         By default, return bitlist for entire problem.
         If a parameter is supplied, simply provide bitlist for that param.
@@ -41,14 +41,15 @@ class Problem():
         if type(index) == int:
             return self.parameters[param_name][index % (len(self.parameters[param_name]))]
         elif type(index) == list:
-            index = self.bitlist_to_int(index, min_value=0, max_value=len(self.parameters[param_name]))
+            index = self.bitlist_to_int(
+                index, min_value=0, max_value=len(self.parameters[param_name]))
             return self.parameters[param_name][index % (len(self.parameters[param_name]))]
 
 
 if __name__ == "__main__":
     cannonball_problem = Problem()
-    cannonball_problem.add_parameter("angle", range(0,181))
-    cannonball_problem.add_parameter("power", range(0,101))
+    cannonball_problem.add_parameter("angle", range(0, 181))
+    cannonball_problem.add_parameter("power", range(0, 101))
 
     choices = {
         "angle": 45,
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     }
 
     def cannonball_distance(problem, choices):
-        g = 9.8 #gravity
+        g = 9.8  # gravity
 
         angle = 0
         angle = problem.get_parameter_value("angle", choices["angle"])
@@ -66,7 +67,7 @@ if __name__ == "__main__":
 
         angle = math.radians(angle)
 
-        distance_launched = (velocity*velocity * math.sin( 2 * angle) )/ g
+        distance_launched = (velocity*velocity * math.sin(2 * angle)) / g
         print("Distance = {}".format(distance_launched))
         if distance_launched <= 0:
             return 0
@@ -74,6 +75,3 @@ if __name__ == "__main__":
             return distance_launched
 
     cannonball_distance(cannonball_problem, choices)
-
-    
-        
