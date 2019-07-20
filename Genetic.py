@@ -1,10 +1,24 @@
 import itertools
 import random
+from enum import Enum
 
-"""
-TODO:
 
-"""
+class SelectionMethod (Enum):
+    TOURNAMENT = "tournament"
+    ROULETTE = "roulette"
+    CUTOFF = "cutoff"
+
+
+class CrossoverMethod(Enum):
+    ONE_POINT = "1_point"
+    TWO_POINT = "2_point"
+    FIXED_COMMON = "fixed_common"
+
+
+class BreakCondition(Enum):
+    GENERATION = "generation"
+    FITNESS = "fitness"
+
 
 class Population():
     def __init__(self):
@@ -17,23 +31,23 @@ class Population():
         self._break_value = 1000
         self._generation_count = 0
 
-        self._selection_method = "cutoff"
-        self._crossover_method = "1_point"
+        self._selection_method = SelectionMethod.CUTOFF
+        self._crossover_method = CrossoverMethod.ONE_POINT
         self._selection_methods = {
-            "cutoff": self._cutoff_selection,
-            "roulette": self._roulette_selection,
-            "tournament": self._tournament_selection,
+            SelectionMethod.CUTOFF: self._cutoff_selection,
+            SelectionMethod.ROULETTE: self._roulette_selection,
+            SelectionMethod.TOURNAMENT: self._tournament_selection,
         }
         self._crossover_methods = {
-            "1_point": self._random_single_point_crossover,
-            "2_point": self._random_two_point_crossover,
-            "fixed_common": self._fixed_common_feature_crossover,
+            CrossoverMethod.ONE_POINT: self._random_single_point_crossover,
+            CrossoverMethod.TWO_POINT: self._random_two_point_crossover,
+            CrossoverMethod.FIXED_COMMON: self._fixed_common_feature_crossover,
         }
         self._break_conditions = {
-            "generation": {"func": lambda: self._generation_count >= self._break_value,
-                           "var": lambda: self._generation_count},
-            "fitness": {"func": lambda: self._get_fittest_chromosome()[1] >= self._break_value,
-                        "var": lambda: self._get_fittest_chromosome()[1]},
+            BreakCondition.GENERATION: {"func": lambda: self._generation_count >= self._break_value,
+                                        "var": lambda: self._generation_count},
+            BreakCondition.FITNESS: {"func": lambda: self._get_fittest_chromosome()[1] >= self._break_value,
+                                     "var": lambda: self._get_fittest_chromosome()[1]},
         }
 
     def chromosome_list_to_number(self, chromosome, max_value=False):
@@ -56,7 +70,8 @@ class Population():
     def _roulette_selection(self, num_to_select=2):
         """Return x number of chromosomes from current population, using roulette selection"""
         prev_fitnesses = self.get_chromosomes_fitness()
-        prev_sorted_by_fitness = [x[0] for x in sorted(prev_fitnesses, key=lambda x: x[1])]
+        prev_sorted_by_fitness = [x[0]
+                                  for x in sorted(prev_fitnesses, key=lambda x: x[1])]
         total_fitness = sum(x[1] for x in prev_fitnesses)
         p_values = []
         q_values = []
@@ -67,7 +82,7 @@ class Population():
             p_values.append(px)
 
         cum_p = 0
-        for index, p  in enumerate(p_values):
+        for index, p in enumerate(p_values):
             cum_p += p_values[index]
             qx = cum_p
             q_values.append(qx)
@@ -94,12 +109,9 @@ class Population():
                 yield chr2
 
     def get_fitness(self, chromosome):
-        """Get the fitness of a given chromosome based on the population fitness function"""
-        f = self.fitness_function(chromosome)
-        if f <= 0:
-            return 0
-        else:
-            return f
+        """Get the fitness of a given chromosome based on the population fitness function, with a minimum of 0."""
+        fitness = self.fitness_function(chromosome)
+        return max(0, fitness)
 
     def get_chromosomes_fitness(self):
         """Return a list of chromosome, fitness tuples, sorted in descending order of fitness"""
@@ -163,8 +175,8 @@ class Population():
                 chr3.append(c1)
                 chr4.append(c1)
             else:
-                chr3.append(random.choice([0,1]))
-                chr4.append(random.choice([0,1]))
+                chr3.append(random.choice([0, 1]))
+                chr4.append(random.choice([0, 1]))
         yield chr3
         yield chr4
 
@@ -179,13 +191,13 @@ class Population():
         """Check if the current generation fulfils a stopping criteria"""
         if echo:
             print("{name}\t{current_value} / {break_value}\t {percentage:.1f}%".format(name=self._break_condition,
-                                                                   current_value=self._break_conditions[self._break_condition]["var"](),
-                                                                   break_value=self._break_value,
-                                                                   percentage=self._break_conditions[self._break_condition]["var"]()/self._break_value*100),
-                                                                   end="\r")
+                                                                                       current_value=self._break_conditions[self._break_condition]["var"](
+                                                                                       ),
+                                                                                       break_value=self._break_value,
+                                                                                       percentage=self._break_conditions[self._break_condition]["var"]()/self._break_value*100),
+                  end="\r")
 
         return self._break_conditions[self._break_condition]["func"]()
-
 
     def next_generation(self):
         """Generate a new population from the current one and replaces it."""
@@ -193,16 +205,17 @@ class Population():
         new_generation = []
 
         while len(new_generation) < prev_generation_size:
-            #Select 2 chromosomes from current generation:
+            # Select 2 chromosomes from current generation:
             chr1, chr2 = self._selection_methods[self._selection_method](2)
-            #Crossover these chromosomes (using a set chance):
+            # Crossover these chromosomes (using a set chance):
             chr3, chr4 = self.crossover(chr1, chr2)
             new_generation.append(chr3)
             new_generation.append(chr4)
-        #Mutate the new population with a given chance:
-        new_population = [self._mutate(chromosome) for chromosome in new_generation]
+        # Mutate the new population with a given chance:
+        new_population = [self._mutate(chromosome)
+                          for chromosome in new_generation]
 
-        self.chromosomes = new_population #Update the population
+        self.chromosomes = new_population  # Update the population
 
     def simulate(self, echo=True, plot=True):
         """Simulate a given number of generations and return the final population"""
@@ -213,30 +226,36 @@ class Population():
             self._generation_count += 1
             self.next_generation()
 
-            #if plot:
+            # if plot:
             max_fitnesses.append(self.fittest_chromosome[1])
             avg_fitnesses.append(self.average_fitness)
 
         if echo:
-            print("After {number_of_generations} generations:".format(number_of_generations=self._generation_count))
-            print("Current Average Fitness: {avg_fitness}".format(avg_fitness=self.average_fitness))
-            print("Current Max Fitness: {maxes}".format(maxes=self.fittest_chromosome[1]))
-            print("Current Fittest: {fittest}".format(fittest=self.fittest_chromosome[0]))
+            print("After {number_of_generations} generations:".format(
+                number_of_generations=self._generation_count))
+            print("Current Average Fitness: {avg_fitness}".format(
+                avg_fitness=self.average_fitness))
+            print("Current Max Fitness: {maxes}".format(
+                maxes=self.fittest_chromosome[1]))
+            print("Current Fittest: {fittest}".format(
+                fittest=self.fittest_chromosome[0]))
 
         if plot:
-            #Plot the results in a nice graph
+            # Plot the results in a nice graph
             import matplotlib.pyplot as plt
             max_fitness_plot = plt.plot(max_fitnesses)
             avg_fitness_plot = plt.plot(avg_fitnesses)
-            plt.setp(max_fitness_plot, linewidth=3, color='c', label="Max Fitness")
-            plt.setp(avg_fitness_plot, linewidth=2, color='y', label="Avg Fitness")
+            plt.setp(max_fitness_plot, linewidth=3,
+                     color='c', label="Max Fitness")
+            plt.setp(avg_fitness_plot, linewidth=2,
+                     color='y', label="Avg Fitness")
             plt.legend(loc=0)
             plt.rcParams.update({'font.size': 18})
             plt.ylabel("Fitness")
             plt.xlabel("Generation")
             plt.show()
 
-        #if plot:
+        # if plot:
         return [max_fitnesses, avg_fitnesses]
 
     """
@@ -274,7 +293,8 @@ class Population():
         return sum([self.get_fitness(chromosome) for chromosome in self.chromosomes]) / len(self.chromosomes)
 
     def _set_chromosomes(self, chromosome_list):
-        self._chromosomes = [[int(chr) for chr in chromosome] for chromosome in chromosome_list]
+        self._chromosomes = [[int(chr) for chr in chromosome]
+                             for chromosome in chromosome_list]
         self._set_chromosome_lenth(len(self._chromosomes[0]))
 
     def _get_chromosomes(self):
@@ -300,13 +320,15 @@ class Population():
         if new_method in self._crossover_methods:
             self._crossover_method = new_method
         else:
-            raise TypeError("Crossover method is not recognised.\n\tMust be in {}".format(list(self._crossover_methods.keys())))
+            raise TypeError("Crossover method is not recognised.\n\tMust be in {}".format(
+                list(self._crossover_methods.keys())))
 
     def _set_selection_method(self, new_method):
         if new_method in self._selection_methods:
             self._selection_method = new_method
         else:
-            raise TypeError("Selection method is not recognised.\n\tMust be in {}".format(list(self._selection_methods.keys())))
+            raise TypeError("Selection method is not recognised.\n\tMust be in {}".format(
+                list(self._selection_methods.keys())))
 
     def set_break_condition(self, condition_name, condition_value):
         if condition_name in self._break_conditions:
@@ -314,7 +336,8 @@ class Population():
             self._break_value = condition_value
             self._break_condition = condition_name
         else:
-            raise KeyError("Invalid condition name.\n\tMust be in {}".format(list(self._break_conditions.keys())))
+            raise KeyError("Invalid condition name.\n\tMust be in {}".format(
+                list(self._break_conditions.keys())))
 
     def _get_selection_methods(self):
         return [key for key in self._selection_methods]
